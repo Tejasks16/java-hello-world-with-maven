@@ -10,6 +10,7 @@ pipeline{
     stage('deploy'){
       steps{
           sh 'docker tag maven:latest 158158759913.dkr.ecr.ap-south-1.amazonaws.com/projbuilt:finalbuild'
+          sh 'docker push 158158759913.dkr.ecr.ap-south-1.amazonaws.com/projbuilt:finalbuild'
         }
     }
 }
