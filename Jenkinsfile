@@ -1,3 +1,4 @@
+def tagname="1.0.0"
 pipeline{
   agent none
   stages{
@@ -7,19 +8,26 @@ pipeline{
       }
       steps{
           sh 'cd /home/slave5/workspace/finalproj'
-          sh 'docker build -t "maven" .'
+          version_tag = sh (returnStdout: true, script: 'git branch | awk -F \')\' \'{print $1}\' | awk -F \' \' \'{print $NF}\' | head -1 ').trim() 
+          sh 'docker build -t maven:$tagname .'
+        }
+    }
+    stage('publish'){
+      agent {
+        label 'javamaven'
+      }
+      steps{
+           sh 'docker tag maven:latest 158158759913.dkr.ecr.ap-south-1.amazonaws.com/projbuilt:finalbuild'
+           sh 'docker push 158158759913.dkr.ecr.ap-south-1.amazonaws.com/projbuilt:finalbuild'       
         }
     }
     stage('deploy'){
-      agent {
-        label 'dockpat'
+      agent{
       }
       steps{
-//           sh 'docker tag maven:latest 158158759913.dkr.ecr.ap-south-1.amazonaws.com/projbuilt:finalbuild'
-//           sh 'docker push 158158759913.dkr.ecr.ap-south-1.amazonaws.com/projbuilt:finalbuild'
-          sh 'docker pull 158158759913.dkr.ecr.ap-south-1.amazonaws.com/projbuilt:finalbuild'
-          sh 'docker run -dt -p 8095:8080 158158759913.dkr.ecr.ap-south-1.amazonaws.com/projbuilt:finalbuild'
-        }
+        sh 'helm upgrade devtest (tarfile from repo) --set version_tag=$tagname'
+      }
     }
+    
 }
 }
